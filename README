@@ -1,0 +1,11 @@
+js-light-loader
+===============
+ - Dynamic javascript and css files loader written in javascript
+
+VERSIONS
+--------
+ v0.1
+ ****
+  - Add application files
+  - Javascript and CSS files
+  - Load at application start

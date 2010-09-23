@@ -1,17 +1,25 @@
-if (typeof console == 'undefined') {
-	console = {
-		log: function(args) {
-			alert(args);
-    }
-	};
-}
-
 /**
- * Loader
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <bydooweedoo@gmail.com> wrote this file. As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return.
+ * Rémi MAREK
+ * ----------------------------------------------------------------------------
+ *
+ * Dynamic javascript and css files loader written in javascript.
+ * http://github.com/bydooweedoo/js-light-loader
  *
  * @class Loader
  */
 Loader = {
+	/**
+	 * Current Loader version
+	 *
+	 * @property {string} version
+	 */
+	version: '0.1',
+
 	/**
 	 * Store files by appName key.
 	 *
@@ -19,42 +27,102 @@ Loader = {
 	 * @property {object} files
 	 */
 	files: { },
+
+	/**
+	 * Application name
+	 *
+	 * @private
+	 * @property {string} appName
+	 */
 	appName: '',
+
+	/**
+	 * Default callback to call after application started
+	 *
+	 * @private
+	 * @property {function} callback
+	 */
 	callback: function() { },
-	code: null,
+
+	/**
+	 * Number of loaded elements
+	 *
+	 * @private
+	 * @property {Int} loadedElements
+	 */
 	loadedElements: 0,
+
+	/**
+	 * Number to total elements
+	 *
+	 * @private
+	 * @property {Int} totalElements
+	 */
 	totalElements: 0,
 
+	/**
+	 * Add application files
+	 *
+	 * @method addApplication
+	 * @param {string} appName Application name
+	 * @param {Array} files List of files string (or dict to force a file type)
+	 * @return {boolean} True if succeed else false
+	 */
 	addApplication: function(appName, files) {
 		this.files[appName] = files;
 		for (var file in files) {
-			if (files[file].substr(-3) == '.js') {
+			if (this.getFileExtension(files[file]) == 'Js') {
 				this.totalElements += 1;
 			}
 		}
+		return (true);
 	},
 
+	/**
+	 * Start loading your application
+	 *
+	 * @method start
+	 * @param {string} appName Application name
+	 * @param {function} callback Your callback which be fired after all files loaded
+	 * @return {boolean} True if succeed else false
+	 */
 	start: function(appName, callback) {
 		this.appName = appName || this.appName;
 		this.callback = callback || function() { };
 		document.body.innerHTML += (
 	    '<div id="loading-mask"></div>' +
       '<div id="loading">' +
-			'<span id="loading-message" style="background: url(\'images/loader.gif\') no-repeat left center;">Loading ' + this.appName + '. Please wait...</span>' +
+			'<span id="loading-message">Loading ' + this.appName + '. Please wait...</span>' +
 			'</div>');
-		this.load();
+		return (this.load());
 	},
 
+	/**
+	 * Create an element and add it to the config.appendTo parameter
+	 *
+	 * @private
+	 * @param {object} config Element configuration
+	 * @return {boolean} True if succeed else false
+	 */
 	createElement: function(config) {
 		var e = document.createElement(config.element);
 		for (var i in config) {
-			if (i != 'element' && i != 'appendTo') {
+			if (i != 'element' &&
+					i != 'appendTo') {
 				e[i] = config[i];
 			}
 		}
-		document.getElementsByTagName(config.appendTo)[0].appendChild(e);
+		var root = document.getElementsByTagName(config.appendTo)[0];
+		return (typeof root.appendChild(e) == 'object');
 	},
 
+	/**
+	 * Load all application files
+	 *
+	 * @private
+	 * @method load
+	 * @return {boolean} True if succeed else false
+	 */
 	load: function() {
 		var date = new Date();
 		var timestamp = date.getTime();
@@ -66,27 +134,71 @@ Loader = {
 				appendTo: 'body'
 			});
 			for (var file in this.files[app]) {
-				if (this.files[app][file].substr(-4) == '.css') {
-					this.createElement({
-						element: 'link',
-						rel: 'stylesheet',
-					  type: 'text/css',
-						href: this.files[app][file] + '?ts=' + timestamp,
-						appendTo: 'head'
-					});
-				} else {
-					this.createElement({
-						element: 'script',
-						type: 'text/javascript',
-						onload: this.elementLoaded,
-						src: this.files[app][file] + '?ts=' + timestamp,
-						appendTo: 'body'
-					});
+				var extension = this.getFileExtension(this.files[app][file]);
+				if (typeof this['load' + extension] == 'function') {
+					this['load' + extension](this.files[app][file] + '?ts=' + timestamp);
 				}
 			}
 		}
 	},
 
+	/**
+	 * Get file extension from its url
+	 *
+	 * @method getFileExtension
+	 * @param {string} url File url
+	 * @return {string} Cutted and Caml cased file extension
+	 */
+	getFileExtension: function(url) {
+		var i = (url + '').lastIndexOf('.');
+		var extension = url.substr(i + 1);
+		return (extension.substr(0, 1).toUpperCase() + extension.substr(1));
+	},
+
+	/**
+	 * Load css file
+	 *
+	 * @private
+	 * @method loadCss
+	 * @param {string} url File url
+	 * @return {boolean} True if succeed else false
+	 */
+	loadCss: function(url) {
+		var result = this.createElement({
+				element: 'link',
+				rel: 'stylesheet',
+				type: 'text/css',
+				href: url,
+				appendTo: 'head'
+			});
+		return (result);
+	},
+
+	/**
+	 * Load javascript file
+	 *
+	 * @private
+	 * @method loadJs
+	 * @param {string} url File url
+	 * @return {boolean} True if succeed else false
+	 */
+	loadJs: function(url) {
+		var result = this.createElement({
+				element: 'script',
+				type: 'text/javascript',
+				onload: this.elementLoaded,
+				src: url,
+				appendTo: 'body'
+			});
+		return (result);
+	},
+
+	/**
+	 * Callback fired when an element loaded
+	 *
+	 * @private
+	 * @method elementLoaded
+	 */
 	elementLoaded: function() {
 		Loader.loadedElements += 1;
 		if (Loader.loadedElements == Loader.totalElements) {
@@ -94,6 +206,12 @@ Loader = {
 		}
 	},
 
+	/**
+	 * Called when all files loaded
+	 *
+	 * @private
+	 * @method finish
+	 */
 	finish: function() {
 		var loadingMask = Ext.get('loading-mask');
 		var loading = Ext.get('loading');
@@ -109,5 +227,5 @@ Loader = {
 					easing: 'bounceOut'
 					});
 		Loader.callback();
-	},
+	}
 };
