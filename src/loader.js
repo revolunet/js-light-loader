@@ -40,7 +40,7 @@ Loader = {
 		document.body.innerHTML += (
 	    '<div id="loading-mask"></div>' +
       '<div id="loading">' +
-			'<span id="loading-message" style="background: url(\'' + Random.get(true) + '\') no-repeat left center;">Loading ' + this.appName + '. Please wait...</span>' +
+			'<span id="loading-message" style="background: url(\'images/loader.gif\') no-repeat left center;">Loading ' + this.appName + '. Please wait...</span>' +
 			'</div>');
 		this.load();
 	},
