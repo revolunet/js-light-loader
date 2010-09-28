@@ -61,6 +61,14 @@ Loader = {
 	totalElements: 0,
 
 	/**
+	 * Show loading mask
+	 *
+	 * @private
+	 * @property {Boolean} showMask
+	 */
+	showMask: true,
+    
+	/**
 	 * Add application files
 	 *
 	 * @method addApplication
@@ -89,7 +97,7 @@ Loader = {
 	start: function(appName, callback) {
 		this.appName = appName || this.appName;
 		this.callback = callback || function() { };
-		document.body.innerHTML += (
+		if (this.showMask) document.body.innerHTML += (
 	    '<div id="loading-mask"></div>' +
       '<div id="loading">' +
 			'<span id="loading-message">Loading ' + this.appName + '. Please wait...</span>' +
@@ -127,13 +135,14 @@ Loader = {
 		var date = new Date();
 		var timestamp = date.getTime();
 		for (var app in this.files) {
-			this.createElement({
+			if (this.showMask) this.createElement({
 				element: 'script',
 				type: 'text/javascript',
 				innerHTML: 'document.getElementById("loading-message").innerHTML = "Loading ' + this.appName + '/' + app + '...";',
 				appendTo: 'body'
 			});
-			for (var file in this.files[app]) {
+			for (var file in this.files[app]) { 
+                if (typeof this.files[app][file] == 'function') continue;
 				var extension = this.getFileExtension(this.files[app][file]);
 				if (typeof this['load' + extension] == 'function') {
 					this['load' + extension](this.files[app][file] + '?ts=' + timestamp);
@@ -144,12 +153,14 @@ Loader = {
 
 	/**
 	 * Get file extension from its url
-	 *
+	 * Exception for google jsapi forced to 'Js'
+     *
 	 * @method getFileExtension
 	 * @param {string} url File url
 	 * @return {string} Cutted and Caml cased file extension
 	 */
 	getFileExtension: function(url) {
+		if (url.indexOf('/jsapi')) return 'Js';    
 		var i = (url + '').lastIndexOf('.');
 		var extension = url.substr(i + 1);
 		return (extension.substr(0, 1).toUpperCase() + extension.substr(1));
@@ -213,19 +224,21 @@ Loader = {
 	 * @method finish
 	 */
 	finish: function() {
-		var loadingMask = Ext.get('loading-mask');
-		var loading = Ext.get('loading');
-		loading.fadeOut({ duration: 0.2, remove: true });
-		loadingMask.setOpacity(0.9);
-		loadingMask.shift({
-				xy: loading.getXY(),
-					width: loading.getWidth(),
-					height: loading.getHeight(),
-					remove: true,
-					duration: 1,
-					opacity: 0.1,
-					easing: 'bounceOut'
-					});
+        if (this.showMask && typeof(Ext) == 'object') {
+            var loadingMask = Ext.get('loading-mask');
+            var loading = Ext.get('loading');
+            loading.fadeOut({ duration: 0.2, remove: true });
+            loadingMask.setOpacity(0.9);
+            loadingMask.shift({
+                    xy: loading.getXY(),
+                        width: loading.getWidth(),
+                        height: loading.getHeight(),
+                        remove: true,
+                        duration: 1,
+                        opacity: 0.1,
+                        easing: 'bounceOut'
+                        });
+            }
 		Loader.callback();
 	}
 };
