@@ -135,12 +135,14 @@ Loader = {
 		var date = new Date();
 		var timestamp = date.getTime();
 		for (var app in this.files) {
-			if (this.showMask) this.createElement({
-				element: 'script',
-				type: 'text/javascript',
-				innerHTML: 'document.getElementById("loading-message").innerHTML = "Loading ' + this.appName + '/' + app + '...";',
-				appendTo: 'body'
-			});
+			if (this.showMask) {
+                this.createElement({
+                    element: 'script',
+                    type: 'text/javascript',
+                    innerHTML: 'document.getElementById("loading-message").innerHTML = "Loading ' + this.appName + '/' + app + '...";',
+                    appendTo: 'body'
+                });
+            }
 			for (var file in this.files[app]) { 
                 if (typeof this.files[app][file] == 'function') continue;
 				var extension = this.getFileExtension(this.files[app][file]);
@@ -160,7 +162,7 @@ Loader = {
 	 * @return {string} Cutted and Caml cased file extension
 	 */
 	getFileExtension: function(url) {
-		if (url.indexOf('/jsapi')) return 'Js';    
+		if (url.indexOf('/jsapi')>-1) return 'Js';    
 		var i = (url + '').lastIndexOf('.');
 		var extension = url.substr(i + 1);
 		return (extension.substr(0, 1).toUpperCase() + extension.substr(1));
@@ -196,10 +198,10 @@ Loader = {
 	loadJs: function(url) {
 		var result = this.createElement({
 				element: 'script',
-				type: 'text/javascript',
+				type: 'application/javascript',
 				onload: this.elementLoaded,
 				src: url,
-				appendTo: 'body'
+				appendTo: 'head'
 			});
 		return (result);
 	},
