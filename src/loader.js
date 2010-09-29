@@ -199,16 +199,17 @@ Loader = {
 	loadJs: function(url) {
 		var result = this.createElement({
 				element: 'script',
-				type: 'application/javascript',
+				type: 'text/javascript',
 				onload: this.elementLoaded,
+				onreadystatechange: this.elementReadyStateChanged,                
 				src: url,
-				appendTo: 'body'
+				appendTo: 'head'
 			});
 		return (result);
 	},
 
 	/**
-	 * Callback fired when an element loaded
+	 * Callback fired when an element loaded (Firefox/Chrome)
 	 *
 	 * @private
 	 * @method elementLoaded
@@ -220,7 +221,15 @@ Loader = {
 			Loader.finish();
 		}
 	},
-
+	/**
+	 * Callback fired when an element loaded (IE only)
+	 *
+	 * @private
+	 * @method elementLoaded
+	 */
+	elementReadyStateChanged: function() {
+        if( this.readyState == 'loaded' || this.readyState == 'complete' ) Loader.elementLoaded();
+	},
 	/**
 	 * Called when all files loaded
 	 *
