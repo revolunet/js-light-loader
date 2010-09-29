@@ -79,6 +79,7 @@ Loader = {
 	addApplication: function(appName, files) {
 		this.files[appName] = files;
 		for (var file in files) {
+            if (typeof files[file] != 'string') continue;
 			if (this.getFileExtension(files[file]) == 'Js') {
 				this.totalElements += 1;
 			}
@@ -201,7 +202,7 @@ Loader = {
 				type: 'application/javascript',
 				onload: this.elementLoaded,
 				src: url,
-				appendTo: 'head'
+				appendTo: 'body'
 			});
 		return (result);
 	},
@@ -213,6 +214,7 @@ Loader = {
 	 * @method elementLoaded
 	 */
 	elementLoaded: function() {
+       // alert('elementLoaded');
 		Loader.loadedElements += 1;
 		if (Loader.loadedElements == Loader.totalElements) {
 			Loader.finish();
@@ -242,5 +244,18 @@ Loader = {
                         });
             }
 		Loader.callback();
-	}
+	},
+    
+	/**
+	 * Reset apps and files
+	 *
+	 * @private
+	 * @method finish
+	 */
+	raz: function() {
+        Loader.files = {}
+        Loader.loadedElements = 0;
+        Loader.totalElements = 0;
+        Loader.appName = '';
+    }
 };
