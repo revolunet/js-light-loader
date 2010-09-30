@@ -26,7 +26,7 @@ Loader = {
 	 * @private
 	 * @property {object} files
 	 */
-	files: { },
+	files: {},
 
 	/**
 	 * Application name
@@ -42,7 +42,7 @@ Loader = {
 	 * @private
 	 * @property {function} callback
 	 */
-	callback: function() { },
+	callback: function() {},
 
 	/**
 	 * Number of loaded elements
@@ -67,7 +67,7 @@ Loader = {
 	 * @property {Boolean} showMask
 	 */
 	showMask: true,
-    
+
 	/**
 	 * Add application files
 	 *
@@ -79,8 +79,8 @@ Loader = {
 	addApplication: function(appName, files) {
 		this.files[appName] = files;
 		for (var file in files) {
-            if (typeof files[file] != 'string') continue;
-			if (this.getFileExtension(files[file]) == 'Js') {
+			if (typeof files[file] == 'string' &&
+                this.getFileExtension(files[file]) == 'Js') {
 				this.totalElements += 1;
 			}
 		}
@@ -97,12 +97,15 @@ Loader = {
 	 */
 	start: function(appName, callback) {
 		this.appName = appName || this.appName;
-		this.callback = callback || function() { };
-		if (this.showMask) document.body.innerHTML += (
-	    '<div id="loading-mask"></div>' +
-      '<div id="loading">' +
-			'<span id="loading-message">Loading ' + this.appName + '. Please wait...</span>' +
-			'</div>');
+		this.callback = callback || function() {};
+		if (this.showMask) {
+            document.body.innerHTML +=
+                ('<div id="loading-mask"></div>' +
+                 '<div id="loading">' +
+                 '<span id="loading-message">Loading ' +
+                 this.appName + '. Please wait...</span>' +
+                 '</div>');
+        }
 		return (this.load());
 	},
 
@@ -140,17 +143,19 @@ Loader = {
                 this.createElement({
                     element: 'script',
                     type: 'text/javascript',
-                    innerHTML: 'document.getElementById("loading-message").innerHTML = "Loading ' + this.appName + '/' + app + '...";',
+                    innerHTML: 'document.getElementById("loading-message").innerHTML = "Loading ' +
+                            this.appName + '/' + app + '...";',
                     appendTo: 'body'
                 });
             }
-			for (var file in this.files[app]) { 
-                if (typeof this.files[app][file] == 'function') continue;
-				var extension = this.getFileExtension(this.files[app][file]);
-				if (typeof this['load' + extension] == 'function') {
-					this['load' + extension](this.files[app][file] + '?ts=' + timestamp);
-				}
-			}
+			for (var file in this.files[app]) {
+                if (typeof this.files[app][file] != 'function') {
+                    var extension = this.getFileExtension(this.files[app][file]);
+                    if (typeof this['load' + extension] == 'function') {
+                        this['load' + extension](this.files[app][file] + '?ts=' + timestamp);
+                    }
+                }
+            }
 		}
 	},
 
@@ -163,7 +168,9 @@ Loader = {
 	 * @return {string} Cutted and Caml cased file extension
 	 */
 	getFileExtension: function(url) {
-		if (url.indexOf('/jsapi')>-1) return 'Js';    
+		if (url.indexOf('/jsapi') > -1) {
+            return ('Js');
+        }
 		var i = (url + '').lastIndexOf('.');
 		var extension = url.substr(i + 1);
 		return (extension.substr(0, 1).toUpperCase() + extension.substr(1));
@@ -201,7 +208,7 @@ Loader = {
 				element: 'script',
 				type: 'text/javascript',
 				onload: this.elementLoaded,
-				onreadystatechange: this.elementReadyStateChanged,                
+				onreadystatechange: this.elementReadyStateChanged,
 				src: url,
 				appendTo: 'head'
 			});
@@ -215,12 +222,12 @@ Loader = {
 	 * @method elementLoaded
 	 */
 	elementLoaded: function() {
-       // alert('elementLoaded');
 		Loader.loadedElements += 1;
 		if (Loader.loadedElements == Loader.totalElements) {
 			Loader.finish();
 		}
 	},
+
 	/**
 	 * Callback fired when an element loaded (IE only)
 	 *
@@ -228,8 +235,12 @@ Loader = {
 	 * @method elementLoaded
 	 */
 	elementReadyStateChanged: function() {
-        if( this.readyState == 'loaded' || this.readyState == 'complete' ) Loader.elementLoaded();
+        if (this.readyState == 'loaded' ||
+            this.readyState == 'complete') {
+            Loader.elementLoaded();
+        }
 	},
+
 	/**
 	 * Called when all files loaded
 	 *
@@ -254,14 +265,14 @@ Loader = {
             }
 		Loader.callback();
 	},
-    
+
 	/**
 	 * Reset apps and files
 	 *
 	 * @private
-	 * @method finish
+	 * @method reset
 	 */
-	raz: function() {
+	reset: function() {
         Loader.files = {}
         Loader.loadedElements = 0;
         Loader.totalElements = 0;
